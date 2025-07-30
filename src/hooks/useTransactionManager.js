@@ -1,0 +1,98 @@
+import { useState, useEffect } from 'react';
+import { processCSV, filterDuplicates, saveToLocalStorage, loadFromLocalStorage } from '../utils/csvProcessor';
+
+export const useTransactionManager = () => {
+  const [selectedBank, setSelectedBank] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [message, setMessage] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const savedData = loadFromLocalStorage('bankTransactions');
+    if (savedData) {
+      setTransactions(savedData);
+    }
+  }, []);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedFile(file);
+    setMessage('');
+  };
+
+  const handleBankChange = (event) => {
+    setSelectedBank(event.target.value);
+    setMessage('');
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile || !selectedBank) {
+      setMessage('Please select both a file and bank type.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setMessage('');
+
+    try {
+      const text = await selectedFile.text();
+      const newTransactions = processCSV(text, selectedBank);
+      
+      // Filter out duplicates
+      const uniqueNewTransactions = filterDuplicates(newTransactions, transactions);
+      
+      if (uniqueNewTransactions.length === 0) {
+        setMessage('No new transactions found. All data already exists.');
+      } else {
+        const updatedTransactions = [...transactions, ...uniqueNewTransactions];
+        setTransactions(updatedTransactions);
+        console.log('Updated transactions:', updatedTransactions);
+        setMessage(`Successfully processed ${uniqueNewTransactions.length} new transactions.`);
+      }
+      
+      // Reset form
+      setSelectedFile(null);
+      setSelectedBank('');
+      document.getElementById('file-input').value = '';
+      
+    } catch (error) {
+      setMessage('Error processing file. Please check the file format.');
+      console.error('Error processing file:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSave = () => {
+    const success = saveToLocalStorage('bankTransactions', transactions);
+    if (success) {
+      setMessage('Data saved successfully to localStorage!');
+    } else {
+      setMessage('Error saving data to localStorage.');
+    }
+  };
+
+  const clearMessage = () => {
+    setTimeout(() => setMessage(''), 5000);
+  };
+
+  useEffect(() => {
+    if (message) {
+      clearMessage();
+    }
+  }, [message]);
+
+  return {
+    selectedBank,
+    selectedFile,
+    transactions,
+    message,
+    isProcessing,
+    handleFileChange,
+    handleBankChange,
+    handleUpload,
+    handleSave
+  };
+}; 
