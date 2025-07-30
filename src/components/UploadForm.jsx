@@ -34,7 +34,7 @@ const UploadForm = ({
           <option value="">Choose a bank...</option>
           <option value="hsbc">HSBC</option>
           <option value="hsb">HSB</option>
-          <option value="sbc">SBC</option>
+          <option value="scb">SCB</option>
           <option value="citi">Citi</option>
         </Select>
       </FormGroup>

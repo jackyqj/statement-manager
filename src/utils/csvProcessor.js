@@ -2,7 +2,7 @@
 export const formatDate = (dateStr) => {
   if (!dateStr) return '';
   
-  // Handle DD/MM/YYYY format
+  // Handle DD/MM/YYYY format (both HSBC and SBC use this format)
   const parts = dateStr.split('/');
   if (parts.length === 3) {
     const day = parts[0].padStart(2, '0');
@@ -17,8 +17,17 @@ export const formatDate = (dateStr) => {
 // CSV processing function
 export const processCSV = (csvText, bankType) => {
   const lines = csvText.split('\n');
-  const headers = lines[0].split(',').map(h => h.trim());
   
+  if (bankType === 'scb') {
+    return processSCBData(lines);
+  } else {
+    return processHSBCData(lines);
+  }
+};
+
+// Process HSBC format
+const processHSBCData = (lines) => {
+  const headers = lines[0].split(',').map(h => h.trim());
   const processedData = [];
   
   for (let i = 1; i < lines.length; i++) {
@@ -49,9 +58,64 @@ export const processCSV = (csvText, bankType) => {
     });
     
     // Add bank type to each transaction
-    row.bankType = bankType;
+    row.bankType = 'hsbc';
     
     processedData.push(row);
+  }
+  
+  return processedData;
+};
+
+// Process SCB format
+const processSCBData = (lines) => {
+  const processedData = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line || line.includes('A. Point Card') || line.includes('日期') || 
+        line.includes('帐户结余') || line.includes('信贷额') || line.includes('到期缴款日') || 
+        line.includes('最低付款额') || line.includes('已志账项结余')) {
+      continue;
+    }
+    
+    // Skip header lines and empty lines
+    if (line.includes('进支详列') || line.includes('港币银码') || line.includes('外币银码')) {
+      continue;
+    }
+    
+    // Parse SBC transaction line
+    // Format: date, description, amount, foreign_amount
+    const parts = line.split(',');
+    if (parts.length >= 3) {
+      const date = parts[0].trim();
+      const description = parts[1].trim();
+      const amountStr = parts[2].trim();
+      
+      // Skip if no valid date or amount
+      if (!date || !amountStr || date === '日期') {
+        continue;
+      }
+      
+      // Parse amount and determine transaction type
+      const amountMatch = amountStr.match(/HKD\s*([\d,]+\.?\d*)\s*(DR|CR)/);
+      if (!amountMatch) continue;
+      
+      const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
+      const transactionType = amountMatch[2];
+      
+      // Convert SBC format to HSBC format
+      const row = {
+        'Transaction date': date,
+        'Description': description,
+        'Billing amount': transactionType === 'DR' ? `-${amount.toFixed(2)}` : amount.toFixed(2),
+        'Billing currency': 'HKD',
+        'Transaction status': 'POSTED',
+        'Credit / Debit': transactionType === 'DR' ? 'DEBIT' : 'CREDIT',
+        'bankType': 'scb'
+      };
+      
+      processedData.push(row);
+    }
   }
   
   return processedData;
@@ -60,11 +124,11 @@ export const processCSV = (csvText, bankType) => {
 // Duplicate detection function
 export const filterDuplicates = (newTransactions, existingTransactions) => {
   const existingKeys = new Set(
-    existingTransactions.map(t => `${t['Transaction date']}-${t['Billing amount']}`)
+    existingTransactions.map(t => `${t['bankType']}-${t['Transaction date']}-${t['Billing amount']}`)
   );
   
   return newTransactions.filter(t => {
-    const key = `${t['Transaction date']}-${t['Billing amount']}`;
+    const key = `${t['bankType']}-${t['Transaction date']}-${t['Billing amount']}`;
     return !existingKeys.has(key);
   });
 };
