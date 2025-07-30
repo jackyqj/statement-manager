@@ -138,25 +138,6 @@ export const SaveButton = styled.button`
   }
 `;
 
-export const GridContainer = styled.div`
-  width: 100%;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  
-  .ag-theme-alpine {
-    --ag-header-height: 50px;
-    --ag-header-foreground-color: #333;
-    --ag-header-background-color: #f8f9fa;
-    --ag-header-cell-hover-background-color: #e9ecef;
-    --ag-row-hover-color: #f8f9fa;
-    --ag-selected-row-background-color: #e3f2fd;
-    --ag-font-size: 13px;
-    --ag-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-`;
-
 export const Message = styled.div`
   padding: 15px;
   margin: 10px 0;
@@ -184,27 +165,4 @@ export const Stats = styled.div`
   background: #e9ecef;
   border-radius: 6px;
   font-weight: 500;
-`;
-
-export const FilterSection = styled.div`
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-`;
-
-export const FilterButton = styled.button`
-  background: #6c757d;
-  color: white;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  
-  &:hover {
-    background: #5a6268;
-  }
 `; 
