@@ -1,24 +1,48 @@
 import styled from 'styled-components';
 
 export const Container = styled.div`
-  min-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-sizing: border-box;
 `;
 
 export const Header = styled.h1`
   text-align: center;
-  color: #333;
+  color: #2c3e50;
   margin-bottom: 30px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  letter-spacing: 2px;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+  }
 `;
 
 export const UploadSection = styled.div`
   background: #f8f9fa;
-  padding: 30px;
+  padding: 20px;
   border-radius: 10px;
   margin-bottom: 30px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 export const FormGroup = styled.div`
@@ -42,6 +66,7 @@ export const Select = styled.select`
   color: #333;
   cursor: pointer;
   font-weight: 500;
+  margin: 0;
   
   &:focus {
     outline: none;
@@ -67,7 +92,7 @@ export const Select = styled.select`
 `;
 
 export const FileInput = styled.input`
-  width: 100%;
+  width: 620px;
   padding: 12px;
   border: 2px solid #ddd;
   border-radius: 6px;
@@ -75,6 +100,7 @@ export const FileInput = styled.input`
   background: white;
   color: #333;
   cursor: pointer;
+  margin: 0;
   
   &:focus {
     outline: none;
@@ -111,6 +137,7 @@ export const UploadButton = styled.button`
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.3s;
+  margin: 0;
   
   &:hover {
     background: #0056b3;

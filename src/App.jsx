@@ -18,7 +18,8 @@ function App() {
     handleClearData,
     handleDeleteTransactions,
     handleUpdateTags,
-    handleRemoveTags
+    handleRemoveTags,
+    handleExportData
   } = useTransactionManager();
 
   return (
@@ -48,6 +49,7 @@ function App() {
           onDeleteTransactions={handleDeleteTransactions}
           onUpdateTags={handleUpdateTags}
           onRemoveTags={handleRemoveTags}
+          onExportData={handleExportData}
         />
       )}
     </Container>

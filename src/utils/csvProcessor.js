@@ -48,6 +48,8 @@ export const processCSV = (csvText, bankType) => {
     return processCitiData(lines);
   } else if (bankType === 'hasb') {
     return processHASBData(lines);
+  } else if (bankType === 'localstorage') {
+    return processLocalStorageData(lines);
   } else {
     return processHSBCData(lines);
   }
@@ -262,6 +264,58 @@ const processHASBData = (lines) => {
         'Credit / Debit': transactionType,
         'bankType': 'hasb'
       };
+      
+      processedData.push(row);
+    }
+  }
+  
+  return processedData;
+};
+
+// Process LocalStorage format (imported CSV)
+const processLocalStorageData = (lines) => {
+  const processedData = [];
+  
+  // Skip header line
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    
+    // Parse CSV line with proper handling of quoted values
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let j = 0; j < line.length; j++) {
+      const char = line[j];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        values.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    values.push(current.trim()); // Add the last value
+    
+    if (values.length >= 8) {
+      const row = {
+        'bankType': values[0]?.toLowerCase() || '',
+        'Transaction date': values[1] || '',
+        'Description': values[2]?.replace(/^"|"$/g, '') || '', // Remove quotes
+        'Billing amount': values[3] || '',
+        'Billing currency': values[4] || '',
+        'Transaction status': values[5] || '',
+        'Credit / Debit': values[6] || '',
+        'Tags': values[7]?.replace(/^"|"$/g, '') || '' // Remove quotes
+      };
+      
+      // Convert tags string back to array
+      if (row['Tags']) {
+        row.tags = row['Tags'].split('; ').filter(tag => tag.trim());
+        delete row['Tags'];
+      }
       
       processedData.push(row);
     }

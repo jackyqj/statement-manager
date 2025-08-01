@@ -9,6 +9,8 @@ const TableContainer = styled.div`
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const Table = styled.table`
@@ -79,7 +81,8 @@ const FilterInput = styled.input`
   border-radius: 6px;
   font-size: 14px;
   margin-right: 10px;
-  width: 200px;
+  min-width: 150px;
+  flex: 1;
   
   &:focus {
     outline: none;
@@ -492,7 +495,7 @@ const CustomTable = ({ data, onSave, onDataChange, onDeleteTransactions, onUpdat
     { key: 'Transaction date', label: 'Transaction Date', sortable: true },
     { key: 'Description', label: 'Description', sortable: true },
     { key: 'Billing amount', label: 'Billing Amount', sortable: true },
-    { key: 'Credit / Debit', label: 'Type', sortable: true },
+    // { key: 'Credit / Debit', label: 'Type', sortable: true },
     { key: 'tags', label: 'Tags', sortable: false },
     { key: 'actions', label: 'Actions', sortable: false }
   ];
@@ -619,18 +622,25 @@ const CustomTable = ({ data, onSave, onDataChange, onDeleteTransactions, onUpdat
                              color: getAmountColor(item['Billing amount']), 
                              fontWeight: 'bold',
                              fontFamily: 'monospace',
-                             display: 'flex',
-                             justifyContent: 'space-between',
-                             alignItems: 'center'
+                             textAlign: 'right',
+                             whiteSpace: 'nowrap',
+                             position: 'relative'
                            }}>
-                             <span style={{ textAlign: 'left' }}>$</span>
-                             <span style={{ textAlign: 'right' }}>
+                             <span style={{ 
+                               position: 'absolute', 
+                               left: '12px', 
+                               top: '50%', 
+                               transform: 'translateY(-50%)' 
+                             }}>
+                               $
+                             </span>
+                             <span style={{ paddingLeft: '20px' }}>
                                {formatAmount(item['Billing amount']).amount}
                              </span>
                            </Td>
-                           <Td style={{ color: getTypeColor(item['Credit / Debit']), fontWeight: 'bold' }}>
+                           {/* <Td style={{ color: getTypeColor(item['Credit / Debit']), fontWeight: 'bold' }}>
                              {item['Credit / Debit']}
-                           </Td>
+                           </Td> */}
                            <Td>
                              {item.tags && item.tags.map(tag => (
                                <TagDisplay key={tag}>

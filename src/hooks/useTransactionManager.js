@@ -151,6 +151,58 @@ export const useTransactionManager = () => {
     setMessage(`Tag "${tagToRemove}" removed from ${transactionsToUpdate.length} transaction(s)!`);
   };
 
+  const handleExportData = () => {
+    if (transactions.length === 0) {
+      setMessage('No data to export.');
+      return;
+    }
+
+    try {
+      // Define CSV headers
+      const headers = [
+        'Bank',
+        'Transaction Date',
+        'Description',
+        'Billing Amount',
+        'Billing Currency',
+        'Transaction Status',
+        'Credit / Debit',
+        'Tags'
+      ];
+
+      // Convert transactions to CSV format
+      const csvContent = [
+        headers.join(','),
+        ...transactions.map(transaction => [
+          transaction.bankType?.toUpperCase() || '',
+          transaction['Transaction date'] || '',
+          `"${(transaction['Description'] || '').replace(/"/g, '""')}"`,
+          transaction['Billing amount'] || '',
+          transaction['Billing currency'] || '',
+          transaction['Transaction status'] || '',
+          transaction['Credit / Debit'] || '',
+          transaction.tags ? `"${transaction.tags.join('; ')}"` : ''
+        ].join(','))
+      ].join('\n');
+
+      // Create and download the file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `bank_transactions_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setMessage('Data exported successfully!');
+    } catch (error) {
+      console.error('Export error:', error);
+      setMessage('Error exporting data.');
+    }
+  };
+
   const clearMessage = () => {
     setTimeout(() => setMessage(''), 5000);
   };
@@ -174,6 +226,7 @@ export const useTransactionManager = () => {
     handleClearData,
     handleDeleteTransactions,
     handleUpdateTags,
-    handleRemoveTags
+    handleRemoveTags,
+    handleExportData
   };
 }; 
