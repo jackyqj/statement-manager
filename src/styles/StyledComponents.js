@@ -200,4 +200,124 @@ export const RemoveTagButton = styled.span`
   }
 `;
 
+// New components for enhanced UI
+export const PageHeader = styled.div`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px 20px;
+  margin: -20px -20px 30px -20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+`;
+
+export const Card = styled.div`
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid #f0f0f0;
+`;
+
+export const StatusBadge = styled.span`
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: ${props => props.variant === 'success' ? '#d4edda' : props.variant === 'warning' ? '#fff3cd' : '#f8d7da'};
+  color: ${props => props.variant === 'success' ? '#155724' : props.variant === 'warning' ? '#856404' : '#721c24'};
+`;
+
+export const Tooltip = styled.div`
+  position: relative;
+  display: inline-block;
+  
+  &:hover::after {
+    content: "${props => props.text}";
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+`;
+
+export const ProgressBar = styled.div`
+  width: 100%;
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 10px 0;
+  
+  &::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: ${props => props.progress}%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+  }
+`;
+
+export const EmptyState = styled.div`
+  text-align: center;
+  padding: 60px 20px;
+  color: #6c757d;
+  
+  svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+  
+  h3 {
+    margin: 16px 0 8px 0;
+    color: #495057;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+`;
+
+export const QuickActions = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+`;
+
+export const QuickActionButton = styled.button`
+  padding: 8px 16px;
+  border: 1px solid #dee2e6;
+  background: white;
+  color: #495057;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+  }
+  
+  &.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+`;
+
  
