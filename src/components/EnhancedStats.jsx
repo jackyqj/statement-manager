@@ -195,7 +195,7 @@ const EnhancedStats = ({ transactions, filteredTransactions }) => {
             {Object.entries(amountsByBank).map(([bank, amount]) => (
               <BankCard key={bank}>
                 <BankName>{bank}</BankName>
-                <BankAmount ispositive={amount >= 0}>
+                <BankAmount ispositive={(amount >= 0).toString()}>
                   <span style={{ textAlign: 'left' }}>$</span>
                   <span style={{ textAlign: 'right' }}>
                     {formatAmount(amount).amount}

@@ -157,4 +157,20 @@ export const Message = styled.div`
   }
 `;
 
+export const RemoveTagButton = styled.span`
+  margin-left: 4px;
+  cursor: pointer;
+  color: #dc3545;
+  font-weight: bold;
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: 2px;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #dc3545;
+    color: white;
+  }
+`;
+
  

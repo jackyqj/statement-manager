@@ -128,6 +128,29 @@ export const useTransactionManager = () => {
     setMessage(`Tag "${tagName}" added to ${transactionsToTag.length} transaction(s)!`);
   };
 
+  const handleRemoveTags = (transactionsToUpdate, tagToRemove) => {
+    const updatedTransactions = transactions.map(transaction => {
+      const shouldUpdate = transactionsToUpdate.some(toUpdate => 
+        toUpdate['Transaction date'] === transaction['Transaction date'] &&
+        toUpdate['Billing amount'] === transaction['Billing amount'] &&
+        toUpdate.bankType === transaction.bankType
+      );
+      
+      if (shouldUpdate) {
+        const existingTags = transaction.tags || [];
+        const newTags = existingTags.filter(tag => tag !== tagToRemove);
+        
+        return { ...transaction, tags: newTags };
+      }
+      
+      return transaction;
+    });
+    
+    setTransactions(updatedTransactions);
+    saveToLocalStorage('bankTransactions', updatedTransactions);
+    setMessage(`Tag "${tagToRemove}" removed from ${transactionsToUpdate.length} transaction(s)!`);
+  };
+
   const clearMessage = () => {
     setTimeout(() => setMessage(''), 5000);
   };
@@ -150,6 +173,7 @@ export const useTransactionManager = () => {
     handleSave,
     handleClearData,
     handleDeleteTransactions,
-    handleUpdateTags
+    handleUpdateTags,
+    handleRemoveTags
   };
 }; 

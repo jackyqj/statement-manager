@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import styled from 'styled-components';
 import { formatDate } from '../utils/csvProcessor';
+import { RemoveTagButton } from '../styles/StyledComponents';
 
 const TableContainer = styled.div`
   background: white;
@@ -253,7 +254,7 @@ const ClearFiltersButton = styled.button`
   }
 `;
 
-const CustomTable = ({ data, onSave, onDataChange, onDeleteTransactions, onUpdateTags }) => {
+const CustomTable = ({ data, onSave, onDataChange, onDeleteTransactions, onUpdateTags, onRemoveTags }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [filters, setFilters] = useState({});
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
@@ -345,15 +346,15 @@ const CustomTable = ({ data, onSave, onDataChange, onDeleteTransactions, onUpdat
 
   // Final filtered data (after tag filtering)
   const finalFilteredData = useMemo(() => {
-    const result = filteredByTags;
-    
-    // Notify parent component of filtered data changes
+    return filteredByTags;
+  }, [filteredByTags]);
+
+  // Notify parent component of filtered data changes using useEffect
+  useEffect(() => {
     if (onDataChange) {
-      onDataChange(result);
+      onDataChange(finalFilteredData);
     }
-    
-    return result;
-  }, [filteredByTags, onDataChange]);
+  }, [finalFilteredData, onDataChange]);
 
   // Handle sorting
   const handleSort = (key) => {
@@ -425,6 +426,10 @@ const CustomTable = ({ data, onSave, onDataChange, onDeleteTransactions, onUpdat
     if (tagName && tagName.trim()) {
       onUpdateTags([transaction], tagName.trim());
     }
+  };
+
+  const handleRemoveTagFromTransaction = (transaction, tagToRemove) => {
+    onRemoveTags([transaction], tagToRemove);
   };
 
   // Get all available tags
@@ -628,7 +633,15 @@ const CustomTable = ({ data, onSave, onDataChange, onDeleteTransactions, onUpdat
                            </Td>
                            <Td>
                              {item.tags && item.tags.map(tag => (
-                               <TagDisplay key={tag}>{tag}</TagDisplay>
+                               <TagDisplay key={tag}>
+                                 {tag}
+                                 <RemoveTagButton
+                                   onClick={() => handleRemoveTagFromTransaction(item, tag)}
+                                   title="Remove tag"
+                                 >
+                                   ×
+                                 </RemoveTagButton>
+                               </TagDisplay>
                              ))}
                            </Td>
                            <ActionCell>
