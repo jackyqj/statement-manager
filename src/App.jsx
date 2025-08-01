@@ -15,7 +15,9 @@ function App() {
     handleBankChange,
     handleUpload,
     handleSave,
-    handleClearData
+    handleClearData,
+    handleDeleteTransactions,
+    handleUpdateTags
   } = useTransactionManager();
 
   return (
@@ -42,6 +44,8 @@ function App() {
           transactions={transactions}
           onSave={handleSave}
           onClearData={handleClearData}
+          onDeleteTransactions={handleDeleteTransactions}
+          onUpdateTags={handleUpdateTags}
         />
       )}
     </Container>

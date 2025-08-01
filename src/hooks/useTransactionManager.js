@@ -89,6 +89,45 @@ export const useTransactionManager = () => {
     setMessage('All data cleared successfully!');
   };
 
+  const handleDeleteTransactions = (transactionsToDelete) => {
+    const updatedTransactions = transactions.filter(transaction => 
+      !transactionsToDelete.some(toDelete => 
+        toDelete['Transaction date'] === transaction['Transaction date'] &&
+        toDelete['Billing amount'] === transaction['Billing amount'] &&
+        toDelete.bankType === transaction.bankType
+      )
+    );
+    
+    setTransactions(updatedTransactions);
+    saveToLocalStorage('bankTransactions', updatedTransactions);
+    setMessage(`${transactionsToDelete.length} transaction(s) deleted successfully!`);
+  };
+
+  const handleUpdateTags = (transactionsToTag, tagName) => {
+    const updatedTransactions = transactions.map(transaction => {
+      const shouldUpdate = transactionsToTag.some(toTag => 
+        toTag['Transaction date'] === transaction['Transaction date'] &&
+        toTag['Billing amount'] === transaction['Billing amount'] &&
+        toTag.bankType === transaction.bankType
+      );
+      
+      if (shouldUpdate) {
+        const existingTags = transaction.tags || [];
+        const newTags = existingTags.includes(tagName) 
+          ? existingTags 
+          : [...existingTags, tagName];
+        
+        return { ...transaction, tags: newTags };
+      }
+      
+      return transaction;
+    });
+    
+    setTransactions(updatedTransactions);
+    saveToLocalStorage('bankTransactions', updatedTransactions);
+    setMessage(`Tag "${tagName}" added to ${transactionsToTag.length} transaction(s)!`);
+  };
+
   const clearMessage = () => {
     setTimeout(() => setMessage(''), 5000);
   };
@@ -109,6 +148,8 @@ export const useTransactionManager = () => {
     handleBankChange,
     handleUpload,
     handleSave,
-    handleClearData
+    handleClearData,
+    handleDeleteTransactions,
+    handleUpdateTags
   };
 }; 

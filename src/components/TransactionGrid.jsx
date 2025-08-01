@@ -5,7 +5,7 @@ import {
 import CustomTable from './CustomTable';
 import EnhancedStats from './EnhancedStats';
 
-const TransactionGrid = ({ transactions, onSave, onClearData }) => {
+const TransactionGrid = ({ transactions, onSave, onClearData, onDeleteTransactions, onUpdateTags }) => {
   const [filteredData, setFilteredData] = useState(transactions);
 
   const handleDataChange = (newFilteredData) => {
@@ -39,6 +39,8 @@ const TransactionGrid = ({ transactions, onSave, onClearData }) => {
         data={transactions} 
         onSave={onSave} 
         onDataChange={handleDataChange}
+        onDeleteTransactions={onDeleteTransactions}
+        onUpdateTags={onUpdateTags}
       />
     </>
   );
