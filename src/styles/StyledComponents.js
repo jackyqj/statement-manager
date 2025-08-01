@@ -157,12 +157,4 @@ export const Message = styled.div`
   }
 `;
 
-export const Stats = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  padding: 15px;
-  background: #e9ecef;
-  border-radius: 6px;
-  font-weight: 500;
-`; 
+ 

@@ -86,6 +86,33 @@ const FilterInput = styled.input`
   }
 `;
 
+const DateFilterContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+`;
+
+const DateFilterLabel = styled.span`
+  font-weight: bold;
+  color: #333;
+  min-width: 80px;
+`;
+
+const DateInput = styled.input`
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 150px;
+  
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+`;
+
 const FilterSelect = styled.select`
   padding: 8px 12px;
   border: 2px solid #ddd;
@@ -99,38 +126,7 @@ const FilterSelect = styled.select`
   }
 `;
 
-const PaginationContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  background: #f8f9fa;
-  border-top: 1px solid #dee2e6;
-`;
 
-const PaginationButton = styled.button`
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  background: white;
-  cursor: pointer;
-  border-radius: 4px;
-  margin: 0 2px;
-  
-  &:hover {
-    background: #e9ecef;
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  &.active {
-    background: #007bff;
-    color: white;
-    border-color: #007bff;
-  }
-`;
 
 const ClearFiltersButton = styled.button`
   background: #dc3545;
@@ -147,11 +143,10 @@ const ClearFiltersButton = styled.button`
   }
 `;
 
-const CustomTable = ({ data, onSave }) => {
+const CustomTable = ({ data, onSave, onDataChange }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [filters, setFilters] = useState({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
 
   // Sorting function
   const sortData = (data, sortConfig) => {
@@ -186,7 +181,8 @@ const CustomTable = ({ data, onSave }) => {
   // Filtering function
   const filterData = (data, filters) => {
     return data.filter(item => {
-      return Object.keys(filters).every(key => {
+      // Check text filters
+      const textFiltersPass = Object.keys(filters).every(key => {
         if (!filters[key]) return true;
         
         const itemValue = String(item[key] || '').toLowerCase();
@@ -194,20 +190,43 @@ const CustomTable = ({ data, onSave }) => {
         
         return itemValue.includes(filterValue);
       });
+
+      if (!textFiltersPass) return false;
+
+      // Check date range filter
+      if (dateRange.startDate || dateRange.endDate) {
+        const transactionDate = formatDate(item['Transaction date']);
+        const itemDate = new Date(transactionDate);
+        
+        if (dateRange.startDate) {
+          const startDate = new Date(dateRange.startDate);
+          if (itemDate < startDate) return false;
+        }
+        
+        if (dateRange.endDate) {
+          const endDate = new Date(dateRange.endDate);
+          // Set end date to end of day for inclusive filtering
+          endDate.setHours(23, 59, 59, 999);
+          if (itemDate > endDate) return false;
+        }
+      }
+
+      return true;
     });
   };
 
   // Apply sorting and filtering
   const processedData = useMemo(() => {
     let filteredData = filterData(data, filters);
-    return sortData(filteredData, sortConfig);
-  }, [data, filters, sortConfig]);
-
-  // Pagination
-  const totalPages = Math.ceil(processedData.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const currentData = processedData.slice(startIndex, endIndex);
+    const sortedData = sortData(filteredData, sortConfig);
+    
+    // Notify parent component of filtered data changes
+    if (onDataChange) {
+      onDataChange(sortedData);
+    }
+    
+    return sortedData;
+  }, [data, filters, sortConfig, dateRange]);
 
   // Handle sorting
   const handleSort = (key) => {
@@ -216,7 +235,6 @@ const CustomTable = ({ data, onSave }) => {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
-    setCurrentPage(1);
   };
 
   // Handle filtering
@@ -225,13 +243,12 @@ const CustomTable = ({ data, onSave }) => {
       ...prev,
       [key]: value
     }));
-    setCurrentPage(1);
   };
 
   // Clear all filters
   const clearFilters = () => {
     setFilters({});
-    setCurrentPage(1);
+    setDateRange({ startDate: '', endDate: '' });
   };
 
   // Get color for amount and type
@@ -275,6 +292,23 @@ const CustomTable = ({ data, onSave }) => {
             Clear Filters
           </ClearFiltersButton>
         </div>
+        
+        <DateFilterContainer>
+          <DateFilterLabel>Date Range:</DateFilterLabel>
+          <DateInput
+            type="date"
+            value={dateRange.startDate}
+            onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+            placeholder="Start Date"
+          />
+          <span style={{ color: '#666' }}>to</span>
+          <DateInput
+            type="date"
+            value={dateRange.endDate}
+            onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+            placeholder="End Date"
+          />
+        </DateFilterContainer>
       </FilterContainer>
 
       <TableContainer>
@@ -293,7 +327,7 @@ const CustomTable = ({ data, onSave }) => {
             </tr>
           </thead>
           <tbody>
-            {currentData.map((item, index) => (
+            {processedData.map((item, index) => (
               <Tr key={index}>
                 <Td>{item.bankType?.toUpperCase()}</Td>
                 <Td>{formatDate(item['Transaction date'])}</Td>
@@ -310,55 +344,7 @@ const CustomTable = ({ data, onSave }) => {
         </Table>
       </TableContainer>
 
-      {totalPages > 1 && (
-        <PaginationContainer>
-          <div>
-            Showing {startIndex + 1}-{Math.min(endIndex, processedData.length)} of {processedData.length} transactions
-          </div>
-          <div>
-            <PaginationButton
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-            >
-              First
-            </PaginationButton>
-            <PaginationButton
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </PaginationButton>
-            
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-              if (pageNum > totalPages) return null;
-              
-              return (
-                <PaginationButton
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={currentPage === pageNum ? 'active' : ''}
-                >
-                  {pageNum}
-                </PaginationButton>
-              );
-            })}
-            
-            <PaginationButton
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </PaginationButton>
-            <PaginationButton
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-            >
-              Last
-            </PaginationButton>
-          </div>
-        </PaginationContainer>
-      )}
+
     </>
   );
 };
