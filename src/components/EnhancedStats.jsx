@@ -36,6 +36,8 @@ const StatValue = styled.div`
   font-weight: bold;
   margin-bottom: 8px;
   color: #fff;
+  text-align: right;
+  font-family: monospace;
 `;
 
 const StatLabel = styled.div`
@@ -83,9 +85,31 @@ const BankAmount = styled.div`
   font-size: 1.2rem;
   font-weight: bold;
   color: ${props => props.ispositive ? '#4ade80' : '#f87171'};
+  font-family: monospace;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 const EnhancedStats = ({ transactions, filteredTransactions }) => {
+  // Format amount for accounting display
+  const formatAmount = (amount) => {
+    if (!amount || isNaN(amount)) return { symbol: '$', amount: '0.00' };
+    
+    // Format with accounting style: $ (1,000.00) for negative, $ 1,000.00 for positive
+    const absAmount = Math.abs(amount);
+    const formattedAmount = absAmount.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    
+    if (amount < 0) {
+      return { symbol: '$', amount: `(${formattedAmount})` };
+    } else {
+      return { symbol: '$', amount: formattedAmount };
+    }
+  };
+
   // Calculate total amounts
   const calculateTotalAmount = (data) => {
     return data.reduce((total, transaction) => {
@@ -139,10 +163,18 @@ const EnhancedStats = ({ transactions, filteredTransactions }) => {
         </StatCard>
         
         <StatCard>
-          <StatValue style={{ color: totalAmount >= 0 ? '#4ade80' : '#f87171' }}>
-            {totalAmount >= 0 ? '+' : ''}{totalAmount.toFixed(2)}
+          <StatValue style={{ 
+            color: totalAmount >= 0 ? '#4ade80' : '#f87171',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <span style={{ textAlign: 'left' }}>$</span>
+            <span style={{ textAlign: 'right' }}>
+              {formatAmount(totalAmount).amount}
+            </span>
           </StatValue>
-          <StatLabel>Total Amount (HKD)</StatLabel>
+          <StatLabel>Total Amount</StatLabel>
         </StatCard>
         
         <StatCard>
@@ -164,7 +196,10 @@ const EnhancedStats = ({ transactions, filteredTransactions }) => {
               <BankCard key={bank}>
                 <BankName>{bank}</BankName>
                 <BankAmount ispositive={amount >= 0}>
-                  {amount >= 0 ? '+' : ''}{amount.toFixed(2)}
+                  <span style={{ textAlign: 'left' }}>$</span>
+                  <span style={{ textAlign: 'right' }}>
+                    {formatAmount(amount).amount}
+                  </span>
                 </BankAmount>
               </BankCard>
             ))}

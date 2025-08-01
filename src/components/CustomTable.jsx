@@ -260,6 +260,29 @@ const CustomTable = ({ data, onSave, onDataChange }) => {
     return type === 'DEBIT' ? '#dc3545' : '#28a745';
   };
 
+  // Format amount for accounting display
+  const formatAmount = (amount) => {
+    if (!amount) return { symbol: '$', amount: '0.00' };
+    
+    // Remove any existing currency symbols and convert to number
+    const numericAmount = parseFloat(amount.toString().replace(/[^\d.-]/g, ''));
+    
+    if (isNaN(numericAmount)) return { symbol: '$', amount: '0.00' };
+    
+    // Format with accounting style: $ (1,000.00) for negative, $ 1,000.00 for positive
+    const absAmount = Math.abs(numericAmount);
+    const formattedAmount = absAmount.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    
+    if (numericAmount < 0) {
+      return { symbol: '$', amount: `(${formattedAmount})` };
+    } else {
+      return { symbol: '$', amount: formattedAmount };
+    }
+  };
+
   const columns = [
     { key: 'bankType', label: 'Bank', sortable: true },
     { key: 'Transaction date', label: 'Transaction Date', sortable: true },
@@ -332,9 +355,19 @@ const CustomTable = ({ data, onSave, onDataChange }) => {
                 <Td>{item.bankType?.toUpperCase()}</Td>
                 <Td>{formatDate(item['Transaction date'])}</Td>
                 <Td>{item['Description']}</Td>
-                <Td style={{ color: getAmountColor(item['Billing amount']), fontWeight: 'bold' }}>
-                  {item['Billing amount']}
-                </Td>
+                                                  <Td style={{ 
+                                    color: getAmountColor(item['Billing amount']), 
+                                    fontWeight: 'bold',
+                                    fontFamily: 'monospace',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                  }}>
+                                    <span style={{ textAlign: 'left' }}>$</span>
+                                    <span style={{ textAlign: 'right' }}>
+                                      {formatAmount(item['Billing amount']).amount}
+                                    </span>
+                                  </Td>
                 <Td style={{ color: getTypeColor(item['Credit / Debit']), fontWeight: 'bold' }}>
                   {item['Credit / Debit']}
                 </Td>
