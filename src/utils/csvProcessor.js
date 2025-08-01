@@ -27,7 +27,7 @@ const formatDateByBank = (dateStr, bankType) => {
       const year = parts[2];
       return `${year}-${month}-${day}`;
     } else {
-      // HSBC and SCB use DD/MM/YYYY format
+      // HSBC, SCB, and HASB use DD/MM/YYYY format
       const day = parts[0].padStart(2, '0');
       const month = parts[1].padStart(2, '0');
       const year = parts[2];
@@ -46,6 +46,8 @@ export const processCSV = (csvText, bankType) => {
     return processSCBData(lines);
   } else if (bankType === 'citi') {
     return processCitiData(lines);
+  } else if (bankType === 'hasb') {
+    return processHASBData(lines);
   } else {
     return processHSBCData(lines);
   }
@@ -200,6 +202,65 @@ const processCitiData = (lines) => {
         'Transaction status': 'POSTED',
         'Credit / Debit': transactionType,
         'bankType': 'citi'
+      };
+      
+      processedData.push(row);
+    }
+  }
+  
+  return processedData;
+};
+
+// Process HASB format
+const processHASBData = (lines) => {
+  const processedData = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    
+    // HASB format: Transaction Date\tPost Date\tDescription\tAmount
+    // Split by tab character
+    const parts = line.split('\t');
+    
+    if (parts.length >= 4) {
+      const transactionDate = parts[0].trim();
+      const postDate = parts[1].trim();
+      const description = parts[2].trim();
+      const amountStr = parts[3].trim();
+      
+      // Skip if no valid date or amount
+      if (!transactionDate || !amountStr) {
+        continue;
+      }
+      
+      // Parse amount - handle both positive and negative amounts
+      let amount;
+      let transactionType;
+      
+      if (amountStr.includes('CR')) {
+        // Credit transaction
+        const numericAmount = parseFloat(amountStr.replace('HKD', '').replace('CR', '').trim());
+        amount = numericAmount;
+        transactionType = 'CREDIT';
+      } else {
+        // Debit transaction (default)
+        const numericAmount = parseFloat(amountStr.replace('HKD', '').trim());
+        amount = -numericAmount; // Make it negative for debit
+        transactionType = 'DEBIT';
+      }
+      
+      if (isNaN(amount)) continue;
+      
+      // Convert HASB format to HSBC format
+      const row = {
+        'Transaction date': formatDateByBank(transactionDate, 'hasb'),
+        'Description': description,
+        'Billing amount': amount.toFixed(2),
+        'Billing currency': 'HKD',
+        'Transaction status': 'POSTED',
+        'Credit / Debit': transactionType,
+        'bankType': 'hasb'
       };
       
       processedData.push(row);
