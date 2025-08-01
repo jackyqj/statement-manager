@@ -14,7 +14,8 @@ function App() {
     handleFileChange,
     handleBankChange,
     handleUpload,
-    handleSave
+    handleSave,
+    handleClearData
   } = useTransactionManager();
 
   return (
@@ -40,6 +41,7 @@ function App() {
         <TransactionGrid
           transactions={transactions}
           onSave={handleSave}
+          onClearData={handleClearData}
         />
       )}
     </Container>

@@ -14,12 +14,38 @@ export const formatDate = (dateStr) => {
   return dateStr;
 };
 
+// Bank-specific date formatting
+const formatDateByBank = (dateStr, bankType) => {
+  if (!dateStr) return '';
+  
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    if (bankType === 'citi') {
+      // Citi uses MM/DD/YYYY format
+      const month = parts[0].padStart(2, '0');
+      const day = parts[1].padStart(2, '0');
+      const year = parts[2];
+      return `${year}-${month}-${day}`;
+    } else {
+      // HSBC and SCB use DD/MM/YYYY format
+      const day = parts[0].padStart(2, '0');
+      const month = parts[1].padStart(2, '0');
+      const year = parts[2];
+      return `${year}-${month}-${day}`;
+    }
+  }
+  
+  return dateStr;
+};
+
 // CSV processing function
 export const processCSV = (csvText, bankType) => {
   const lines = csvText.split('\n');
   
   if (bankType === 'scb') {
     return processSCBData(lines);
+  } else if (bankType === 'citi') {
+    return processCitiData(lines);
   } else {
     return processHSBCData(lines);
   }
@@ -112,6 +138,68 @@ const processSCBData = (lines) => {
         'Transaction status': 'POSTED',
         'Credit / Debit': transactionType === 'DR' ? 'DEBIT' : 'CREDIT',
         'bankType': 'scb'
+      };
+      
+      processedData.push(row);
+    }
+  }
+  
+  return processedData;
+};
+
+// Process Citi format
+const processCitiData = (lines) => {
+  const processedData = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    
+    // Handle CSV parsing more robustly to account for quoted values
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let j = 0; j < line.length; j++) {
+      const char = line[j];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        values.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    values.push(current.trim()); // Add the last value
+    
+    // Citi format: "Date","Description","Amount","","Card Number"
+    if (values.length >= 3) {
+      const date = values[0].replace(/"/g, '').trim();
+      const description = values[1].replace(/"/g, '').trim();
+      const amountStr = values[2].replace(/"/g, '').trim();
+      
+      // Skip if no valid date or amount
+      if (!date || !amountStr) {
+        continue;
+      }
+      
+      // Parse amount
+      const amount = parseFloat(amountStr);
+      if (isNaN(amount)) continue;
+      
+      // Determine transaction type based on amount sign
+      const transactionType = amount < 0 ? 'DEBIT' : 'CREDIT';
+      
+      // Convert Citi format to HSBC format
+      const row = {
+        'Transaction date': formatDateByBank(date, 'citi'),
+        'Description': description,
+        'Billing amount': amount.toFixed(2),
+        'Billing currency': 'HKD',
+        'Transaction status': 'POSTED',
+        'Credit / Debit': transactionType,
+        'bankType': 'citi'
       };
       
       processedData.push(row);

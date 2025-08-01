@@ -5,7 +5,7 @@ import {
 import CustomTable from './CustomTable';
 import EnhancedStats from './EnhancedStats';
 
-const TransactionGrid = ({ transactions, onSave }) => {
+const TransactionGrid = ({ transactions, onSave, onClearData }) => {
   const [filteredData, setFilteredData] = useState(transactions);
 
   const handleDataChange = (newFilteredData) => {
@@ -19,9 +19,21 @@ const TransactionGrid = ({ transactions, onSave }) => {
         filteredTransactions={filteredData}
       />
       
-      <SaveButton onClick={onSave}>
-        Save to LocalStorage
-      </SaveButton>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <SaveButton onClick={onSave}>
+          Save to LocalStorage
+        </SaveButton>
+        
+        <SaveButton 
+          onClick={onClearData}
+          style={{ 
+            backgroundColor: '#dc3545',
+            borderColor: '#dc3545'
+          }}
+        >
+          Clear All Data
+        </SaveButton>
+      </div>
       
       <CustomTable 
         data={transactions} 

@@ -74,6 +74,21 @@ export const useTransactionManager = () => {
     }
   };
 
+  const handleClearData = () => {
+    // Clear from localStorage
+    localStorage.removeItem('bankTransactions');
+    
+    // Clear from state
+    setTransactions([]);
+    
+    // Reset form
+    setSelectedFile(null);
+    setSelectedBank('');
+    document.getElementById('file-input').value = '';
+    
+    setMessage('All data cleared successfully!');
+  };
+
   const clearMessage = () => {
     setTimeout(() => setMessage(''), 5000);
   };
@@ -93,6 +108,7 @@ export const useTransactionManager = () => {
     handleFileChange,
     handleBankChange,
     handleUpload,
-    handleSave
+    handleSave,
+    handleClearData
   };
 }; 
