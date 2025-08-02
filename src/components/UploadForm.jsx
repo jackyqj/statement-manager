@@ -40,6 +40,7 @@ const UploadForm = ({ onUpload, onCancel }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -59,19 +60,29 @@ const UploadForm = ({ onUpload, onCancel }) => {
       return;
     }
 
+    setIsUploading(true);
+    setMessage('');
+
     try {
       await onUpload(selectedFile, selectedBank);
       setMessage('File uploaded successfully!');
       setMessageType('success');
-      // Reset form
-      setSelectedBank('');
-      setSelectedFile(null);
-      // Clear file input
-      const fileInput = document.querySelector('input[type="file"]');
-      if (fileInput) fileInput.value = '';
+      
+      // Reset form after successful upload
+      setTimeout(() => {
+        setSelectedBank('');
+        setSelectedFile(null);
+        setMessage('');
+        setIsUploading(false);
+        // Clear file input
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) fileInput.value = '';
+      }, 1500); // Show success message for 1.5 seconds
+      
     } catch (error) {
       setMessage('Error uploading file. Please try again.');
       setMessageType('error');
+      setIsUploading(false);
     }
   };
 
@@ -79,6 +90,7 @@ const UploadForm = ({ onUpload, onCancel }) => {
     setSelectedBank('');
     setSelectedFile(null);
     setMessage('');
+    setIsUploading(false);
     if (onCancel) onCancel();
   };
 
@@ -90,6 +102,7 @@ const UploadForm = ({ onUpload, onCancel }) => {
           id="bank-select"
           value={selectedBank}
           onChange={handleBankChange}
+          disabled={isUploading}
         >
           <option value="">Choose a bank...</option>
           <option value="hsbc">HSBC</option>
@@ -107,6 +120,7 @@ const UploadForm = ({ onUpload, onCancel }) => {
           type="file"
           accept=".csv"
           onChange={handleFileChange}
+          disabled={isUploading}
         />
       </FormGroup>
 
@@ -117,11 +131,11 @@ const UploadForm = ({ onUpload, onCancel }) => {
       )}
 
       <FormActions>
-        <CancelButton onClick={handleCancel}>
+        <CancelButton onClick={handleCancel} disabled={isUploading}>
           Cancel
         </CancelButton>
-        <UploadButton onClick={handleUpload}>
-          Upload Statement
+        <UploadButton onClick={handleUpload} disabled={isUploading}>
+          {isUploading ? 'Uploading...' : 'Upload Statement'}
         </UploadButton>
       </FormActions>
     </UploadFormContainer>

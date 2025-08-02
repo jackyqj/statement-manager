@@ -105,6 +105,7 @@ function App() {
     handleFileChange,
     handleBankChange,
     handleUpload,
+    uploadFile,
     handleSave,
     handleClearData,
     handleDeleteTransactions,
@@ -114,15 +115,16 @@ function App() {
   } = useTransactionManager();
 
   const handleModalUpload = async (file, bank) => {
-    // Set the bank and file in the transaction manager
-    handleBankChange({ target: { value: bank } });
-    handleFileChange({ target: { files: [file] } });
-    
-    // Trigger the upload
-    await handleUpload();
-    
-    // Close the modal after successful upload
-    setIsUploadModalOpen(false);
+    try {
+      // Use the new uploadFile function directly
+      await uploadFile(file, bank);
+      
+      // Close the modal after successful upload
+      setIsUploadModalOpen(false);
+    } catch (error) {
+      console.error('Upload error:', error);
+      // Don't close modal on error, let user see the error message
+    }
   };
 
   const handleOpenUploadModal = () => {

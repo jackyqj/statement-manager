@@ -54,11 +54,52 @@ export const useTransactionManager = () => {
       // Reset form
       setSelectedFile(null);
       setSelectedBank('');
-      document.getElementById('file-input').value = '';
+      
+      // Clear file input more reliably
+      const fileInputs = document.querySelectorAll('input[type="file"]');
+      fileInputs.forEach(input => {
+        if (input.value) {
+          input.value = '';
+        }
+      });
       
     } catch (error) {
       setMessage('Error processing file. Please check the file format.');
       console.error('Error processing file:', error);
+      throw error; // Re-throw to let the calling component handle it
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const uploadFile = async (file, bank) => {
+    if (!file || !bank) {
+      setMessage('Please select both a file and bank type.');
+      return;
+    }
+
+    setIsProcessing(true);
+    setMessage('');
+
+    try {
+      const text = await file.text();
+      const newTransactions = processCSV(text, bank);
+      
+      // Filter out duplicates
+      const uniqueNewTransactions = filterDuplicates(newTransactions, transactions);
+      
+      if (uniqueNewTransactions.length === 0) {
+        setMessage('No new transactions found. All data already exists.');
+      } else {
+        const updatedTransactions = [...transactions, ...uniqueNewTransactions];
+        setTransactions(updatedTransactions);
+        setMessage(`Successfully processed ${uniqueNewTransactions.length} new transactions.`);
+      }
+      
+    } catch (error) {
+      setMessage('Error processing file. Please check the file format.');
+      console.error('Error processing file:', error);
+      throw error;
     } finally {
       setIsProcessing(false);
     }
@@ -83,7 +124,14 @@ export const useTransactionManager = () => {
     // Reset form
     setSelectedFile(null);
     setSelectedBank('');
-    document.getElementById('file-input').value = '';
+    
+    // Clear file inputs more reliably
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+      if (input.value) {
+        input.value = '';
+      }
+    });
     
     setMessage('All data cleared successfully!');
   };
@@ -272,6 +320,7 @@ export const useTransactionManager = () => {
     handleFileChange,
     handleBankChange,
     handleUpload,
+    uploadFile,
     handleSave,
     handleClearData,
     handleDeleteTransactions,
