@@ -443,7 +443,7 @@ const EnhancedTransactionTable = ({
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <StatusBadge variant="success">
+            <StatusBadge $variant="success">
               {processedData.length} of {data.length} transactions
             </StatusBadge>
           </div>
@@ -501,7 +501,7 @@ const EnhancedTransactionTable = ({
                   />
                 </Td>
                 <Td>
-                  <StatusBadge variant="success">
+                  <StatusBadge $variant="success">
                     {item.bankType?.toUpperCase()}
                   </StatusBadge>
                 </Td>

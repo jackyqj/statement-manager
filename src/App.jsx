@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Header, Message, PageHeader } from './styles/StyledComponents';
-import UploadForm from './components/UploadForm';
-import TransactionGrid from './components/TransactionGrid';
+import UploadModal from './components/UploadModal';
 import Dashboard from './components/Dashboard';
 import EnhancedTransactionTable from './components/EnhancedTransactionTable';
 import { useTransactionManager } from './hooks/useTransactionManager';
@@ -9,6 +8,7 @@ import { useTransactionManager } from './hooks/useTransactionManager';
 function App() {
   const [viewMode, setViewMode] = useState('dashboard'); // dashboard, table
   const [filteredData, setFilteredData] = useState([]);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   
   const {
     selectedBank,
@@ -26,6 +26,26 @@ function App() {
     handleRemoveTags,
     handleExportData
   } = useTransactionManager();
+
+  const handleModalUpload = async (file, bank) => {
+    // Set the bank and file in the transaction manager
+    handleBankChange({ target: { value: bank } });
+    handleFileChange({ target: { files: [file] } });
+    
+    // Trigger the upload
+    await handleUpload();
+    
+    // Close the modal after successful upload
+    setIsUploadModalOpen(false);
+  };
+
+  const handleOpenUploadModal = () => {
+    setIsUploadModalOpen(true);
+  };
+
+  const handleCloseUploadModal = () => {
+    setIsUploadModalOpen(false);
+  };
 
   return (
     <Container>
@@ -58,17 +78,22 @@ function App() {
           >
             📋 Table View
           </button>
+          <button 
+            onClick={handleOpenUploadModal}
+            style={{ 
+              padding: '8px 16px', 
+              border: '1px solid rgba(255,255,255,0.3)', 
+              borderRadius: '20px',
+              background: 'rgba(255,255,255,0.1)',
+              color: 'white',
+              cursor: 'pointer',
+              marginLeft: 'auto'
+            }}
+          >
+            📄 Upload Statement
+          </button>
         </div>
       </PageHeader>
-      
-      <UploadForm
-        selectedBank={selectedBank}
-        selectedFile={selectedFile}
-        isProcessing={isProcessing}
-        onBankChange={handleBankChange}
-        onFileChange={handleFileChange}
-        onUpload={handleUpload}
-      />
 
       {message && (
         <Message className={message.includes('Error') ? 'error' : 'success'}>
@@ -137,6 +162,12 @@ function App() {
           )}
         </>
       )}
+
+      <UploadModal 
+        isOpen={isUploadModalOpen}
+        onClose={handleCloseUploadModal}
+        onUpload={handleModalUpload}
+      />
     </Container>
   );
 }

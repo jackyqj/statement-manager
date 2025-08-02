@@ -149,22 +149,6 @@ export const UploadButton = styled.button`
   }
 `;
 
-export const SaveButton = styled.button`
-  background: #28a745;
-  color: white;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-bottom: 20px;
-  
-  &:hover {
-    background: #1e7e34;
-  }
-`;
-
 export const Message = styled.div`
   padding: 15px;
   margin: 10px 0;
@@ -225,8 +209,8 @@ export const StatusBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  background: ${props => props.variant === 'success' ? '#d4edda' : props.variant === 'warning' ? '#fff3cd' : '#f8d7da'};
-  color: ${props => props.variant === 'success' ? '#155724' : props.variant === 'warning' ? '#856404' : '#721c24'};
+  background: ${props => props.$variant === 'success' ? '#d4edda' : props.$variant === 'warning' ? '#fff3cd' : '#f8d7da'};
+  color: ${props => props.$variant === 'success' ? '#155724' : props.$variant === 'warning' ? '#856404' : '#721c24'};
 `;
 
 export const Tooltip = styled.div`
@@ -288,35 +272,6 @@ export const EmptyState = styled.div`
   p {
     margin: 0;
     font-size: 14px;
-  }
-`;
-
-export const QuickActions = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-`;
-
-export const QuickActionButton = styled.button`
-  padding: 8px 16px;
-  border: 1px solid #dee2e6;
-  background: white;
-  color: #495057;
-  border-radius: 20px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: #f8f9fa;
-    border-color: #adb5bd;
-  }
-  
-  &.active {
-    background: #007bff;
-    color: white;
-    border-color: #007bff;
   }
 `;
 

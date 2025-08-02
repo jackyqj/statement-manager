@@ -48,7 +48,6 @@ export const useTransactionManager = () => {
       } else {
         const updatedTransactions = [...transactions, ...uniqueNewTransactions];
         setTransactions(updatedTransactions);
-        console.log('Updated transactions:', updatedTransactions);
         setMessage(`Successfully processed ${uniqueNewTransactions.length} new transactions.`);
       }
       
@@ -130,25 +129,76 @@ export const useTransactionManager = () => {
 
   const handleRemoveTags = (transactionsToUpdate, tagToRemove) => {
     const updatedTransactions = transactions.map(transaction => {
-      const shouldUpdate = transactionsToUpdate.some(toUpdate => 
+      const shouldUpdate = transactionsToUpdate.some(toUpdate =>
         toUpdate['Transaction date'] === transaction['Transaction date'] &&
         toUpdate['Billing amount'] === transaction['Billing amount'] &&
         toUpdate.bankType === transaction.bankType
       );
-      
+
       if (shouldUpdate) {
         const existingTags = transaction.tags || [];
         const newTags = existingTags.filter(tag => tag !== tagToRemove);
-        
+
         return { ...transaction, tags: newTags };
       }
-      
+
       return transaction;
     });
-    
+
     setTransactions(updatedTransactions);
     saveToLocalStorage('bankTransactions', updatedTransactions);
     setMessage(`Tag "${tagToRemove}" removed from ${transactionsToUpdate.length} transaction(s)!`);
+  };
+
+  // Add sample tags to transactions for demo purposes
+  const addSampleTags = () => {
+    const updatedTransactions = transactions.map(transaction => {
+      const desc = transaction['Description']?.toLowerCase() || '';
+      let tags = transaction.tags || [];
+
+      // Add relevant tags based on description
+      if (desc.includes('food') || desc.includes('restaurant') || desc.includes('mcdonalds') || desc.includes('kfc') || desc.includes('starbucks')) {
+        tags = [...new Set([...tags, 'Food & Dining'])];
+      }
+      if (desc.includes('transport') || desc.includes('octopus') || desc.includes('mtr') || desc.includes('bus') || desc.includes('taxi')) {
+        tags = [...new Set([...tags, 'Transport'])];
+      }
+      if (desc.includes('shopping') || desc.includes('taobao') || desc.includes('amazon') || desc.includes('mall') || desc.includes('store')) {
+        tags = [...new Set([...tags, 'Shopping'])];
+      }
+      if (desc.includes('entertainment') || desc.includes('netflix') || desc.includes('spotify') || desc.includes('movie') || desc.includes('game')) {
+        tags = [...new Set([...tags, 'Entertainment'])];
+      }
+      if (desc.includes('utilities') || desc.includes('electricity') || desc.includes('water') || desc.includes('gas') || desc.includes('internet')) {
+        tags = [...new Set([...tags, 'Utilities'])];
+      }
+      if (desc.includes('salary') || desc.includes('income') || desc.includes('deposit')) {
+        tags = [...new Set([...tags, 'Income'])];
+      }
+      if (desc.includes('atm') || desc.includes('withdrawal')) {
+        tags = [...new Set([...tags, 'ATM'])];
+      }
+      if (desc.includes('online') || desc.includes('payment')) {
+        tags = [...new Set([...tags, 'Online Payment'])];
+      }
+
+      // If no specific tags were added, add a general category based on amount
+      if (tags.length === (transaction.tags || []).length) {
+        const amount = parseFloat(transaction['Billing amount']?.replace(/[^\d.-]/g, '') || 0);
+        if (amount > 0) {
+          tags = [...new Set([...tags, 'Income'])];
+        } else if (amount < 0) {
+          tags = [...new Set([...tags, 'Expense'])];
+        }
+      }
+
+      return { ...transaction, tags };
+    });
+
+    const transactionsWithTags = updatedTransactions.filter(t => t.tags && t.tags.length > 0);
+    setTransactions(updatedTransactions);
+    saveToLocalStorage('bankTransactions', updatedTransactions);
+    setMessage(`Sample tags added to ${transactionsWithTags.length} transactions!`);
   };
 
   const handleExportData = () => {
@@ -227,6 +277,7 @@ export const useTransactionManager = () => {
     handleDeleteTransactions,
     handleUpdateTags,
     handleRemoveTags,
-    handleExportData
+    handleExportData,
+    addSampleTags
   };
 }; 
