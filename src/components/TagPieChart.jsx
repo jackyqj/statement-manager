@@ -30,9 +30,7 @@ const TagLevelTab = styled.button`
   }
 `;
 
-const TagPieChart = ({ transactions }) => {
-  const [selectedTagLevel, setSelectedTagLevel] = useState(1);
-  
+const TagPieChart = ({ transactions, selectedTagLevel = 1 }) => {
   // Initialize Highcharts modules
   useEffect(() => {
     if (typeof Highcharts !== 'undefined') {
@@ -248,18 +246,6 @@ const TagPieChart = ({ transactions }) => {
   try {
     return (
       <Card>
-        <TagLevelTabs>
-          {availableTagLevels.map(level => (
-            <TagLevelTab
-              key={level}
-              $active={selectedTagLevel === level}
-              onClick={() => setSelectedTagLevel(level)}
-            >
-              {getTagLevelLabel(level)}
-            </TagLevelTab>
-          ))}
-        </TagLevelTabs>
-        
         <HighchartsReact
           highcharts={Highcharts}
           options={options}

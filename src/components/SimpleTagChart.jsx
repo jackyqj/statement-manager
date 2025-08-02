@@ -24,9 +24,7 @@ const TagLevelTab = styled.button`
   }
 `;
 
-const SimpleTagChart = ({ transactions }) => {
-  const [selectedTagLevel, setSelectedTagLevel] = useState(1);
-
+const SimpleTagChart = ({ transactions, selectedTagLevel = 1 }) => {
   // Get available tag levels based on transactions
   const availableTagLevels = useMemo(() => {
     if (!transactions || !Array.isArray(transactions)) {
@@ -118,18 +116,6 @@ const SimpleTagChart = ({ transactions }) => {
 
   return (
     <Card>
-      <TagLevelTabs>
-        {availableTagLevels.map(level => (
-          <TagLevelTab
-            key={level}
-            $active={selectedTagLevel === level}
-            onClick={() => setSelectedTagLevel(level)}
-          >
-            {getTagLevelLabel(level)}
-          </TagLevelTab>
-        ))}
-      </TagLevelTabs>
-
       <h3 style={{ margin: '0 0 20px 0', color: '#2c3e50', textAlign: 'center' }}>
         Spending by {getTagLevelLabel(selectedTagLevel)}
       </h3>
