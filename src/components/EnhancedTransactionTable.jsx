@@ -515,9 +515,16 @@ const EnhancedTransactionTable = ({
                   color: getAmountColor(item['Billing amount']), 
                   fontWeight: 'bold',
                   fontFamily: 'monospace',
-                  textAlign: 'right'
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
                 }}>
-                  {formatAmount(item['Billing amount']).symbol} {formatAmount(item['Billing amount']).amount}
+                  <span style={{ textAlign: 'left' }}>
+                    {formatAmount(item['Billing amount']).symbol}
+                  </span>
+                  <span style={{ textAlign: 'right' }}>
+                    {formatAmount(item['Billing amount']).amount}
+                  </span>
                 </Td>
                 <Td>
                   {item.tags && item.tags.map(tag => (
