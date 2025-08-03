@@ -1,0 +1,149 @@
+# GitLab CI/CD Pipeline for Statement Manager
+# This pipeline builds the React app and deploys to GitLab Pages
+
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  # Node.js version
+  NODE_VERSION: "22"
+  # Cache key for node_modules
+  CACHE_KEY: "$CI_COMMIT_REF_SLUG-$CI_PROJECT_PATH"
+  # Pages configuration
+  PUBLIC_URL: "/statement-manager"
+
+# Cache node_modules between jobs
+cache:
+  key: $CACHE_KEY
+  paths:
+    - node_modules/
+  policy: pull-push
+
+# Install dependencies job
+install_dependencies:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  before_script:
+    - apk add --no-cache git
+    - npm ci --cache .npm --prefer-offline
+  script:
+    - echo "Dependencies installed successfully"
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: "1 hour"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+# Lint and test job
+lint_and_test:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - install_dependencies
+  before_script:
+    - apk add --no-cache git
+  script:
+    - npm run lint
+    - echo "Linting completed successfully"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+# Build the application
+build_app:
+  stage: build
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - install_dependencies
+  before_script:
+    - apk add --no-cache git
+  script:
+    - npm run build
+    - echo "Build completed successfully"
+  artifacts:
+    paths:
+      - dist/
+    expire_in: "1 week"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+# Deploy to GitLab Pages
+pages:
+  stage: deploy
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build_app
+  script:
+    - echo "Deploying to GitLab Pages..."
+    - mkdir -p public
+    - cp -r dist/* public/
+    - echo "Deployment completed successfully"
+  artifacts:
+    paths:
+      - public/
+    expire_in: "30 days"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+# Docker build and push (optional)
+build_docker_image:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build --target production -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+  when: manual
+
+# Security scanning (optional)
+security_scan:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - install_dependencies
+  before_script:
+    - apk add --no-cache git
+    - npm install -g audit-ci
+  script:
+    - audit-ci --moderate
+    - echo "Security scan completed"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+  allow_failure: true
+
+# Performance testing (optional)
+performance_test:
+  stage: test
+  image: node:${NODE_VERSION}-alpine
+  dependencies:
+    - build_app
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - echo "Running performance tests..."
+    - echo "Build size: $(du -sh dist/ | cut -f1)"
+    - echo "Performance test completed"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+  allow_failure: true 
